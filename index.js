@@ -50,6 +50,7 @@ const animate_css = function (element, index) {
 };
 
 window.onload = function () {
+	console.log('test');
 	const elements = document.querySelectorAll('[' + selector + ']');
 
 	elements.forEach(function (element, index) {
