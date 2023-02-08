@@ -29,12 +29,19 @@ const create_style_tag = function (
 	document.body.insertAdjacentHTML('afterbegin', style_tag);
 };
 
+const has_style_attribute = function (element, style_attribute) {
+	const computed_style = window.getComputedStyle(element);
+	if (computed_style.position === 'absolute' || computed_style.position === 'relative') return true;
+	return false;
+};
+
 const animate_css = function (element, index) {
 	const from = element.getAttribute('data-from');
 	const to = element.getAttribute('data-to');
 	if (!from || !to) return;
 
 	element.classList.add('animate_css', 'animate_css_' + index);
+	if (!has_style_attribute(element, 'position')) element.style.position = 'relative';
 
 	const animation = `
 		<style>
