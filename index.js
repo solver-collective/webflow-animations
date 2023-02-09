@@ -95,13 +95,41 @@ const animate_css = function (element, index) {
 	create_style_tag(element, index, options);
 };
 
+const animate_greesock = function (element, index) {
+	if (!gsap) return;
+	const xPercent = element.getAttribute('data-set-xpercent');
+	const yPercent = element.getAttribute('data-set-ypercent');
+	let x = element.getAttribute('data-x');
+	let y = element.getAttribute('data-y');
+	let duration = element.getAttribute('data-duration');
+	if (duration) duration = parseInt(duration);
+
+	const element_props = gsap.getProperty(element);
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+	const clampX = gsap.utils.clamp(0, window.innerWidth - vw);
+	const clampY = gsap.utils.clamp(0, window.innerHeight - vh);
+
+	gsap.set(element, {
+		x: 0,
+		y: 0,
+	});
+
+	const duration = parseInt(element.getAttribute('data-duration'));
+
+	gsap.to(element, {
+		x: 100,
+		y: 100,
+	});
+};
+
 window.onload = function () {
 	const elements = document.querySelectorAll('[' + selector + ']');
 
 	if (elements && elements.length > 0) {
 		elements.forEach(function (element, index) {
 			const type = TYPES.find((name) => name === element.getAttribute(selector));
-			if (type && type === GREENSOCK) return null;
+			if (type && type === GREENSOCK) animate_greesock(element, index);
 			if (type && type === CSS) animate_css(element, index);
 		});
 	}
