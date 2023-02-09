@@ -100,26 +100,25 @@ const animate_greesock = function (element, index) {
 	const xPercent = element.getAttribute('data-set-xpercent');
 	const yPercent = element.getAttribute('data-set-ypercent');
 	let x = element.getAttribute('data-x');
+	if (x) x = parseFloat(x);
 	let y = element.getAttribute('data-y');
+	if (y) y = parseFloat(y);
 	let duration = element.getAttribute('data-duration');
 	if (duration) duration = parseInt(duration);
+	const ease = element.getAttribute('data-ease');
 
-	const element_props = gsap.getProperty(element);
-	const vw = window.innerWidth;
-	const vh = window.innerHeight;
-	const clampX = gsap.utils.clamp(0, window.innerWidth - vw);
-	const clampY = gsap.utils.clamp(0, window.innerHeight - vh);
+	console.log({ x, y, duration, ease });
 
 	gsap.set(element, {
 		x: 0,
 		y: 0,
 	});
 
-	const duration = parseInt(element.getAttribute('data-duration'));
-
 	gsap.to(element, {
-		x: 100,
-		y: 100,
+		x,
+		y,
+		duration,
+		ease,
 	});
 };
 
