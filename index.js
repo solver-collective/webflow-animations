@@ -4,6 +4,14 @@ const CSS = 'css';
 const selector = 'data-animation-type';
 const TYPES = [GREENSOCK, CSS];
 
+const intersection_observer = function (element, callback, options = {}) {
+	if (!window) return;
+
+	if (!element || !callback) return;
+	const observer = new IntersectionObserver(callback, options);
+	observer.observe(element);
+};
+
 const create_style_tag = function (element, index, options) {
 	const { duration, delay, iteration, direction, timing } = options;
 	const style_tag = `
@@ -40,6 +48,7 @@ const set_data_attributes = function (data) {
 	const element = document.querySelector(data.el);
 	if (!element) return;
 
+	// CSS
 	if (data.type) element.setAttribute('data-animation-type', data.type);
 	if (data.from) element.setAttribute('data-from', data.from);
 	if (data.to) element.setAttribute('data-to', data.to);
@@ -48,6 +57,12 @@ const set_data_attributes = function (data) {
 	if (data.iteration) element.setAttribute('data-iteration', data.iteration);
 	if (data.direction) element.setAttribute('data-direction', data.direction);
 	if (data.timing) element.setAttribute('data-timing', data.timing);
+
+	// Greensock
+	if (data.x) element.setAttribute('data-x', data.x);
+	if (data.y) element.setAttribute('data-y', data.y);
+	if (data.repeat) element.setAttribute('data-repeat', data.repeat);
+	if (data.ease) element.setAttribute('data-ease', data.ease);
 };
 
 const animate_css = function (element, index) {
@@ -96,19 +111,24 @@ const animate_css = function (element, index) {
 };
 
 const animate_greesock = function (element, index) {
+	console.log(element);
 	if (!gsap) return;
-	const xPercent = element.getAttribute('data-set-xpercent');
-	const yPercent = element.getAttribute('data-set-ypercent');
+
 	let x = element.getAttribute('data-x');
-	if (x) x = parseFloat(x);
+	if (x) x = x ? parseFloat(x) : 0;
+
 	let y = element.getAttribute('data-y');
-	if (y) y = parseFloat(y);
+	y = y ? parseFloat(y) : 0;
+
 	let duration = element.getAttribute('data-duration');
-	if (duration) duration = parseInt(duration);
+	duration = duration ? parseInt(duration) : 1;
+
 	const ease = element.getAttribute('data-ease');
 
-	console.log({ x, y, duration, ease });
+	let repeat = element.getAttribute('data-repeat');
+	repeat = repeat ? parseInt(repeat) : 1;
 
+	console.log({ element, x, y, duration, ease, repeat });
 	gsap.set(element, {
 		x: 0,
 		y: 0,
@@ -119,6 +139,7 @@ const animate_greesock = function (element, index) {
 		y,
 		duration,
 		ease,
+		repeat,
 	});
 };
 
@@ -134,12 +155,14 @@ window.onload = function () {
 	}
 
 	const data = window.animations;
-
 	if (data && data.length > 0) {
 		data.forEach(function (item, index) {
 			let start_index = 0;
 			if (elements && elements.length) start_index = elements.length;
-			if (item.type && item.type === GREENSOCK) return null;
+			if (item.type && item.type === GREENSOCK) {
+				set_data_attributes(item);
+				animate_greesock(document.querySelector(item.el), index);
+			}
 			if (item.type && item.type === CSS && document.querySelector(item.el)) {
 				set_data_attributes(item);
 				animate_css(document.querySelector(item.el), start_index + index);
