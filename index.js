@@ -36,6 +36,20 @@ const has_style_attribute = function (element, style_attribute) {
 	return false;
 };
 
+const set_data_attributes = function (data) {
+	const element = document.querySelector(data.el);
+	if (!element) return;
+
+	if (data.type) element.setAttribute('data-animation-type', data.type);
+	if (data.from) element.setAttribute('data-from', data.from);
+	if (data.to) element.setAttribute('data-to', data.to);
+	if (data.duration) element.setAttribute('data-duration', data.duration);
+	if (data.delay) element.setAttribute('data-delay', data.delay);
+	if (data.iteration) element.setAttribute('data-iteration', data.iteration);
+	if (data.direction) element.setAttribute('data-direction', data.direction);
+	if (data.timing) element.setAttribute('data-timing', data.timing);
+};
+
 const animate_css = function (element, index) {
 	const from = element.getAttribute('data-from');
 	const to = element.getAttribute('data-to');
@@ -84,9 +98,25 @@ const animate_css = function (element, index) {
 window.onload = function () {
 	const elements = document.querySelectorAll('[' + selector + ']');
 
-	elements.forEach(function (element, index) {
-		const type = TYPES.find((name) => name === element.getAttribute(selector));
-		if (type && type === GREENSOCK) return null;
-		if (type && type === CSS) animate_css(element, index);
-	});
+	if (elements && elements.length > 0) {
+		elements.forEach(function (element, index) {
+			const type = TYPES.find((name) => name === element.getAttribute(selector));
+			if (type && type === GREENSOCK) return null;
+			if (type && type === CSS) animate_css(element, index);
+		});
+	}
+
+	const data = window.animations;
+
+	if (data && data.length > 0) {
+		data.forEach(function (item, index) {
+			let start_index = 0;
+			if (elements && elements.length) start_index = elements.length;
+			if (item.type && item.type === GREENSOCK) return null;
+			if (item.type && item.type === CSS && document.querySelector(item.el)) {
+				set_data_attributes(item);
+				animate_css(document.querySelector(item.el), start_index + index);
+			}
+		});
+	}
 };
