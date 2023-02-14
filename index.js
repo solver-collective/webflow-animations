@@ -83,6 +83,8 @@ const animate_css = function (element, index) {
 	const iteration = element.getAttribute('data-iteration');
 	const direction = element.getAttribute('data-direction');
 	const timing = element.getAttribute('data-timing');
+	const _event = element.getAttribute('data-event');
+	const target = element.getAttribute('data-target');
 
 	if (!from || !to) return;
 
@@ -104,19 +106,32 @@ const animate_css = function (element, index) {
 
 	if (!has_style_attribute(element, 'position')) element.style.position = 'relative';
 
-	intersection_observer(
-		element,
-		(event) => {
-			if (!event) return;
-			const { isIntersecting, target } = event[0];
+	if (_event && _event === 'in-view') {
+		intersection_observer(
+			element,
+			(event) => {
+				if (!event) return;
+				const { isIntersecting, target } = event[0];
 
-			if (isIntersecting && element.className.indexOf('animate_css') === -1) {
+				if (isIntersecting && element.className.indexOf('animate_css') === -1) {
+					element.classList.add('animate_css', 'animate_css_' + index);
+					create_animation_style_tag(element, index, options);
+				}
+			},
+			{ threshold: 0.25 }
+		);
+	}
+
+	if (_event && target) {
+		const _target = document.querySelector(target);
+		_target.addEventListener('click', () => {
+			console.log('click');
+			if (element.className.indexOf('animate_css') === -1) {
 				element.classList.add('animate_css', 'animate_css_' + index);
 				create_animation_style_tag(element, index, options);
 			}
-		},
-		{ threshold: 0.25 }
-	);
+		});
+	}
 };
 
 const animate_greesock = function (element, index) {
