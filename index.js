@@ -122,7 +122,7 @@ const animate_css = function (element, index) {
 		);
 	}
 
-	if (_event && target) {
+	if (_event && _event !== 'in-view' && target) {
 		const _target = document.querySelector(target);
 		_target.addEventListener('click', () => {
 			console.log('click');
@@ -132,11 +132,18 @@ const animate_css = function (element, index) {
 			}
 		});
 	}
+
+	if (!_event && element.className.indexOf('animate_css') === -1) {
+		element.classList.add('animate_css', 'animate_css_' + index);
+		create_animation_style_tag(element, index, options);
+	}
 };
 
 const animate_greesock = function (element, index) {
-	console.log(element);
 	if (!gsap) return;
+
+	const _event = element.getAttribute('data-event');
+	const target = element.getAttribute('data-target');
 
 	let x = element.getAttribute('data-x');
 	if (x) x = x ? parseFloat(x) : 0;
@@ -152,18 +159,46 @@ const animate_greesock = function (element, index) {
 	let repeat = element.getAttribute('data-repeat');
 	repeat = repeat ? parseInt(repeat) : 1;
 
-	gsap.set(element, {
-		x: 0,
-		y: 0,
-	});
+	if (_event && _event === 'in-view') {
+		intersection_observer(
+			element,
+			(event) => {
+				if (!event) return;
+				const { isIntersecting, target } = event[0];
 
-	gsap.to(element, {
-		x,
-		y,
-		duration,
-		ease,
-		repeat,
-	});
+				if (isIntersecting) {
+					gsap.set(element, {
+						x: 0,
+						y: 0,
+					});
+				}
+			},
+			{ threshold: 0.25 }
+		);
+	}
+
+	if (_event && _event !== 'in-view' && target) {
+		const _target = document.querySelector(target);
+		_target.addEventListener('click', () => {
+			gsap.to(element, {
+				x,
+				y,
+				duration,
+				ease,
+				repeat,
+			});
+		});
+	}
+
+	if (!_event) {
+		gsap.to(element, {
+			x,
+			y,
+			duration,
+			ease,
+			repeat,
+		});
+	}
 };
 
 window.onload = function () {
