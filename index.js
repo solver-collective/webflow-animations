@@ -8,12 +8,13 @@ const intersection_observer = function (element, callback, options = {}) {
 	if (!window) return;
 
 	if (!element || !callback) return;
+
 	const observer = new IntersectionObserver(callback, options);
 	observer.observe(element);
 };
 
-const create_style_tag = function (element, index, options) {
-	const { duration, delay, iteration, direction, timing } = options;
+const create_animation_style_tag = function (element, index, options) {
+	const { from, to, duration, delay, iteration, direction, timing } = options;
 	const style_tag = `
 		<style>
 			.animate_css_${index} {
@@ -31,6 +32,15 @@ const create_style_tag = function (element, index, options) {
 			  animation-direction: ${direction};
 			  animation-timing-function: ${timing};
 			  animation-fill-mode: forwards;
+			}
+
+			@-webkit-keyframes animation-${index} {
+				from { ${from} }
+				to { ${to} }
+			}
+			@keyframes animation-${index} {
+				from { ${from} }
+				to { ${to} }
 			}
 		</style>
 	`;
@@ -77,6 +87,8 @@ const animate_css = function (element, index) {
 	if (!from || !to) return;
 
 	const options = {
+		from,
+		to,
 		duration: '1000ms',
 		delay: '0ms',
 		iteration: '1',
@@ -90,24 +102,21 @@ const animate_css = function (element, index) {
 	if (direction) options.direction = direction;
 	if (timing) options.timing = timing;
 
-	element.classList.add('animate_css', 'animate_css_' + index);
 	if (!has_style_attribute(element, 'position')) element.style.position = 'relative';
 
-	const animation = `
-		<style>
-			@-webkit-keyframes animation-${index} {
-				from { ${from} }
-				to { ${to} }
-			}
-			@keyframes animation-${index} {
-				from { ${from} }
-				to { ${to} }
-			}
-		</style>
-	`;
+	intersection_observer(
+		element,
+		(event) => {
+			if (!event) return;
+			const { isIntersecting, target } = event[0];
 
-	document.body.insertAdjacentHTML('afterbegin', animation);
-	create_style_tag(element, index, options);
+			if (isIntersecting && element.className.indexOf('animate_css') === -1) {
+				element.classList.add('animate_css', 'animate_css_' + index);
+				create_animation_style_tag(element, index, options);
+			}
+		},
+		{ threshold: 0.25 }
+	);
 };
 
 const animate_greesock = function (element, index) {
@@ -128,7 +137,6 @@ const animate_greesock = function (element, index) {
 	let repeat = element.getAttribute('data-repeat');
 	repeat = repeat ? parseInt(repeat) : 1;
 
-	console.log({ element, x, y, duration, ease, repeat });
 	gsap.set(element, {
 		x: 0,
 		y: 0,
